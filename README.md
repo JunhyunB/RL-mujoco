@@ -1,3 +1,4 @@
 # jarvis
+========
 
-Robot simulation based on ROS and Reinforcement Learning
+Robot simulation based on Reinforcement Learning and openAI gym environment
