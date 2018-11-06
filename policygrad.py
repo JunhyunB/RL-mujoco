@@ -123,16 +123,25 @@ class PolicyGradient:
             self.discounted_episode_rewards_norm = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
         # Initialize parameters
-        units_layer_1 = 1000
-        units_layer_2 = 1000
+        units_layer_1 = 512
+        units_layer_2 = 1024
+        units_layer_3 = 1024
+        units_layer_4 = 512
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1", [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b1 = tf.get_variable("b1", [units_layer_1, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             W2 = tf.get_variable("W2", [units_layer_2, units_layer_1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b2 = tf.get_variable("b2", [units_layer_2, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            W3 = tf.get_variable("W3", [self.n_y, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b3 = tf.get_variable("b3", [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+
+            W3 = tf.get_variable("W3", [units_layer_3, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b3 = tf.get_variable("b3", [units_layer_3, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+
+            W4 = tf.get_variable("W4", [units_layer_4, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b4 = tf.get_variable("b4", [units_layer_4, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+
+            W5 = tf.get_variable("W5", [self.n_y, units_layer_4], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b5 = tf.get_variable("b5", [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
 
         # Forward prop
         with tf.name_scope('layer_1'):
@@ -143,12 +152,18 @@ class PolicyGradient:
             A2 = tf.nn.relu(Z2)
         with tf.name_scope('layer_3'):
             Z3 = tf.add(tf.matmul(W3, A2), b3)
-            A3 = tf.nn.sigmoid(Z3)
+            A3 = tf.nn.relu(Z3)
+        with tf.name_scope('layer_4'):
+            Z4 = tf.add(tf.matmul(W4, A3), b4)
+            A4 = tf.nn.relu(Z4)
+        with tf.name_scope('layer_5'):
+            Z5 = tf.add(tf.matmul(W5, A4), b5)
+            A5 = tf.nn.sigmoid(Z5)
 
         # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
-        logits = tf.transpose(Z3)
+        logits = tf.transpose(Z5)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.sigmoid(logits, name='A3')
+        self.outputs_softmax = tf.nn.sigmoid(logits, name='A5')
 
         with tf.name_scope('loss'):
             neg_log_prob = tf.losses.mean_squared_error(labels, logits)
