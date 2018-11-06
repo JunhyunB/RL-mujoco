@@ -1,7 +1,3 @@
-"""
-Policy Gradient Reinforcement Learning
-Uses a 3 layer neural network as the policy network
-"""
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.framework import ops
@@ -61,8 +57,7 @@ class PolicyGradient:
 
         # Store actions as list of arrays
         # e.g. for n_y = 2 -> [ array([ 1.,  0.]), array([ 0.,  1.]), array([ 0.,  1.]), array([ 1.,  0.]) ]
-        action = np.zeros(self.n_y)
-        action[a] = 1
+        action = a
         self.episode_actions.append(action)
 
 
@@ -81,7 +76,10 @@ class PolicyGradient:
 
         # Select action using a biased sample
         # this will return the index of the action we've sampled
-        action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
+        #action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
+
+        action = prob_weights - 0.5
+
         return action
 
     def learn(self):
@@ -125,8 +123,8 @@ class PolicyGradient:
             self.discounted_episode_rewards_norm = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
         # Initialize parameters
-        units_layer_1 = 10
-        units_layer_2 = 10
+        units_layer_1 = 1000
+        units_layer_2 = 1000
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1", [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
@@ -145,15 +143,15 @@ class PolicyGradient:
             A2 = tf.nn.relu(Z2)
         with tf.name_scope('layer_3'):
             Z3 = tf.add(tf.matmul(W3, A2), b3)
-            A3 = tf.nn.softmax(Z3)
+            A3 = tf.nn.sigmoid(Z3)
 
         # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
         logits = tf.transpose(Z3)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.softmax(logits, name='A3')
+        self.outputs_softmax = tf.nn.sigmoid(logits, name='A3')
 
         with tf.name_scope('loss'):
-            neg_log_prob = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
+            neg_log_prob = tf.losses.mean_squared_error(labels, logits)
             loss = tf.reduce_mean(neg_log_prob * self.discounted_episode_rewards_norm)  # reward guided loss
 
         with tf.name_scope('train'):
