@@ -11,7 +11,7 @@ env = gym.make('Humanoid-v2')
 RENDER_ENV = False
 EPISODES = 500000
 rewards = []
-RENDER_REWARD_MIN = 600
+RENDER_REWARD_MIN = 650
 
 if __name__ == "__main__":
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     PG = PolicyGradient(
         n_x = env.observation_space.shape[0],
         n_y = env.action_space.shape[0],
-        learning_rate=0.001,
+        learning_rate=0.003,
         reward_decay=0.98,
         load_path=load_path,
         save_path=save_path
@@ -34,11 +34,16 @@ if __name__ == "__main__":
         observation = env.reset()
         episode_reward = 0
 
+        rand = random.choice([True,False,False,False, False])
         while True:
-            if RENDER_ENV: env.render()
+            if RENDER_ENV: 
+                env.render()
 
             # 1. Choose an action based on observation
-            action = PG.choose_action(observation)
+            if rand:
+                action = env.action_space.sample()
+            else:
+                action = PG.choose_action(observation)
             #action = env.action_space.sample()
 
             # 2. Take action in the environment
@@ -62,7 +67,8 @@ if __name__ == "__main__":
                 discounted_episode_rewards_norm = PG.learn()
 
                 # Render env if we get to rewards minimum
-                if max_reward_so_far > RENDER_REWARD_MIN: RENDER_ENV = True
+                if (max_reward_so_far > RENDER_REWARD_MIN) or (episode > 10000): 
+                    RENDER_ENV = True
 
 
                 break
