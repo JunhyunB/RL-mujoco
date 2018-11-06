@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.framework import ops
+import random
 
 class PolicyGradient:
     def __init__(
@@ -79,6 +80,19 @@ class PolicyGradient:
         #action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
 
         action = prob_weights - 0.5
+
+        """
+        e = 0.3
+        
+
+        if random.random() < e:
+            action2 = [random.random()-0.5 for i in range(17)]
+
+            for i in range(len(action[0])):
+                if random.choice([True,False]):
+                    action[0][i] = action2[i]
+            #print("random action")
+        """
 
         return action
 

@@ -11,7 +11,7 @@ env = gym.make('Humanoid-v2')
 RENDER_ENV = False
 EPISODES = 500000
 rewards = []
-RENDER_REWARD_MIN = 650
+RENDER_REWARD_MIN = 600
 
 if __name__ == "__main__":
 
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     PG = PolicyGradient(
         n_x = env.observation_space.shape[0],
         n_y = env.action_space.shape[0],
-        learning_rate=0.003,
-        reward_decay=0.98,
+        learning_rate=0.1,
+        reward_decay=0.99,
         load_path=load_path,
         save_path=save_path
     )
@@ -34,7 +34,11 @@ if __name__ == "__main__":
         observation = env.reset()
         episode_reward = 0
 
-        rand = random.choice([True,False,False,False, False])
+        ratio = 0
+        temp = [False for i in range(ratio)]
+        temp.append(True)
+        rand = random.choice(temp)
+
         while True:
             if RENDER_ENV: 
                 env.render()
