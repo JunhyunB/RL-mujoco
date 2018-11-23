@@ -73,7 +73,7 @@ class PolicyGradient:
         observation = observation[:, np.newaxis]
 
         # Run forward propagation to get softmax probabilities
-        prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: observation})
+        prob_weights = self.sess.run(self.outputs_sigmoid, feed_dict = {self.X: observation})
 
         # Select action using a biased sample
         # this will return the index of the action we've sampled
@@ -137,10 +137,10 @@ class PolicyGradient:
             self.discounted_episode_rewards_norm = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
         # Initialize parameters
-        units_layer_1 = 512
-        units_layer_2 = 1024
-        units_layer_3 = 1024
-        units_layer_4 = 512
+        units_layer_1 = 256
+        units_layer_2 = 512
+        units_layer_3 = 512
+        units_layer_4 = 256
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1", [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
@@ -174,14 +174,13 @@ class PolicyGradient:
             Z5 = tf.add(tf.matmul(W5, A4), b5)
             A5 = tf.nn.sigmoid(Z5)
 
-        # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
         logits = tf.transpose(Z5)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.sigmoid(logits, name='A5')
+        self.outputs_sigmoid = tf.nn.sigmoid(logits, name='A5')
 
         with tf.name_scope('loss'):
-            neg_log_prob = tf.losses.mean_squared_error(labels, logits)
-            loss = tf.reduce_mean(neg_log_prob * self.discounted_episode_rewards_norm)  # reward guided loss
+            neg_log_prob = tf.losses.absolute_difference(labels, logits)
+            loss = tf.reduce_mean(neg_log_prob * self.discounted_episode_rewards_norm)
 
         with tf.name_scope('train'):
             self.train_op = tf.train.AdamOptimizer(self.lr).minimize(loss)
