@@ -6,12 +6,13 @@ import random
 
 env = gym.make('Humanoid-v2')
 #env = gym.make('HalfCheetah-v2')
-#env = env.unwrapped
+env = env.unwrapped
+env.seed(1)
 
 RENDER_ENV = False
-EPISODES = 500000
+EPISODES = 5000
 rewards = []
-RENDER_REWARD_MIN = 600
+RENDER_REWARD_MIN = 0
 
 if __name__ == "__main__":
 
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     PG = PolicyGradient(
         n_x = env.observation_space.shape[0],
         n_y = env.action_space.shape[0],
-        learning_rate=0.1,
+        learning_rate=0.0001,
         reward_decay=0.99,
         load_path=load_path,
         save_path=save_path
@@ -38,8 +39,10 @@ if __name__ == "__main__":
         temp = [False for i in range(ratio)]
         temp.append(True)
         rand = random.choice(temp)
+        count = 0
 
         while True:
+            count = count + 1
             if RENDER_ENV: 
                 env.render()
 
@@ -48,7 +51,6 @@ if __name__ == "__main__":
                 action = env.action_space.sample()
             else:
                 action = PG.choose_action(observation)
-            #action = env.action_space.sample()
 
             # 2. Take action in the environment
             observation_, reward, done, info = env.step(action)
@@ -71,9 +73,8 @@ if __name__ == "__main__":
                 discounted_episode_rewards_norm = PG.learn()
 
                 # Render env if we get to rewards minimum
-                if (max_reward_so_far > RENDER_REWARD_MIN) or (episode > 10000): 
+                if (max_reward_so_far > RENDER_REWARD_MIN): #or (episode > 30000): 
                     RENDER_ENV = True
-
 
                 break
 
