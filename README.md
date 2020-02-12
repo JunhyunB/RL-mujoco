@@ -1,6 +1,6 @@
-# jarvis
+# RL-mujoco
 
-jarvis 는 Reniforcement Learning 과 openAI gym을 이용하여 로봇 시뮬레이션을 하기 위한 저장소입니다.
+RL-mujoco 는 Reniforcement Learning 과 openAI gym을 이용하여 로봇 시뮬레이션을 하기 위한 저장소입니다.
 
 # Table of Contents
 - [1. How to use openAI gym](#1-how-to-use-openai-gym)
